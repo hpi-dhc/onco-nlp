@@ -1,0 +1,2 @@
+class TNM:
+    T = None
