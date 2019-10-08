@@ -5,9 +5,10 @@ class TNM:
 
 from onconlp.classification import rulebased_tnm
 
-class TNMExtractor:    
-    def process_document(self, text):
-        return rulebased_tnm.process_document(text)
-        
-    def process_sentence(self, text):
-        return rulebased_tnm.process_sentence(text)
+class TNMExtractor:
+
+    def __init__(self, language='de'):
+        self._impl = rulebased_tnm.RuleTNMExtractor(language)
+
+    def process_document(self, text, split_sentences=True):
+        return self._impl.process_document(text, split_sentences)

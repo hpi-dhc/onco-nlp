@@ -19,6 +19,7 @@ setuptools.setup(
     ],
     install_requires=[
         'nose2',
+        'spacy'
     ],
     python_requires='>=3.6',
 )
