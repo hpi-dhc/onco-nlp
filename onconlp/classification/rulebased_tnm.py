@@ -1,4 +1,4 @@
-from tnm import TNM
+from onconlp.classification.tnm import TNM
 
 def process_document(text):
     return [process_sentence(s) for s in split_sentences(text)]
