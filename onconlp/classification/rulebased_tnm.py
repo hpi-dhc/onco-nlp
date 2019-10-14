@@ -2,13 +2,14 @@ from onconlp.classification.tnm import TNMClassification, Match
 import spacy
 from spacy.matcher import Matcher
 from spacy.tokenizer import Tokenizer
+import regex as re
 
 class RuleTNMExtractor():
 
     tnm_rules = {
-        'T' : "[cp]?T([0-4][ab]?|is|a|X)",
-        'N' : "[cp]?N([0-3]|X)",
-        'M' : "[cp]?M([0-1]|X)",
+        'T' : "[yr]?[ry]?[pc]?T([0-4][ab]?|is|a|X)",
+        'N' : "[yr]?[ry]?[pc]?N([0-3]|X)",
+        'M' : "[yr]?[ry]?[pc]?M([0-1]|X)",
         'L' : "L[0-1]",
         'V' : "V[0-2]",
         'Pn': "Pn[0-1]",
@@ -26,14 +27,11 @@ class RuleTNMExtractor():
         suffixes = spacy.util.compile_suffix_regex(self.nlp.Defaults.suffixes).search
         infixes = spacy.util.compile_infix_regex(self.nlp.Defaults.infixes).finditer
 
-        def custom_tokenizer(nlp):
-            return Tokenizer(nlp.vocab, 
-                            rules=rules,
-                            prefix_search=prefixes,
-                            suffix_search=suffixes,
-                            infix_finditer=infixes)
-
-        self.nlp.tokenizer = custom_tokenizer(self.nlp)
+        self.nlp.tokenizer = Tokenizer(self.nlp.vocab, 
+                                rules=rules,
+                                prefix_search=prefixes,
+                                suffix_search=suffixes,
+                                infix_finditer=infixes)
         self.matcher = Matcher(self.nlp.vocab)
         for k, v in self.tnm_rules.items():
             self.matcher.add(k, None, [
@@ -42,13 +40,27 @@ class RuleTNMExtractor():
 
     def transform(self, text):
         doc = self.nlp(text)        
-        return self.process(doc)
-            
-    def process(self, text):
-        matches = self.matcher(text)
+        matches = self.matcher(doc)
         results = []
+        cur_result = TNMClassification()
         for match_id, start, end in matches:
-            span = text[start:end]  # The matched span
-            print(self.nlp.vocab[match_id])
-            results.append(Match(span, None, span))
+            span = doc[start:end]  # The matched span
+            tnmcomponent = self.nlp.vocab[match_id].text
+            if cur_result.hasvalue(tnmcomponent):
+                results.append(cur_result)
+                cur_result = TNMClassification()
+            m = re.match('([yr]?)([yr]?)([pc]?)(.*)', span.text)
+            prefixes = []
+            for i in range(1, 4):
+                prefix = m.group(i)
+                if prefix:
+                    prefixes.append(prefix)
+            value = m.group(4)
+            if tnmcomponent in ['T', 'N', 'M'] and len(prefixes) > 0:
+                cur_result.setvalue(tnmcomponent, Match(span, prefixes, value))
+            else:
+                cur_result.setvalue(tnmcomponent, Match(span, None, value))
+        if not cur_result.empty():
+            results.append(cur_result)
         return results
+        
