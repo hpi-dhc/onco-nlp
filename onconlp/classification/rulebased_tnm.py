@@ -18,7 +18,7 @@ class RuleTNMExtractor():
         'G' : r"G[1-4]"
     }
 
-    __lymphnode_pattern = r'\( ?\d+ ?\/ ?\d+ ?\)'
+    __lymphnode_pattern = r'\d+ ?\/ ?\d+'
 
     def __init__(self, language):
         self.nlp = spacy.load(language)
@@ -37,18 +37,17 @@ class RuleTNMExtractor():
                                 infix_finditer=infixes)
         self.matcher = Matcher(self.nlp.vocab)
         # Special handling for lymph node details
-        matcher.add('N', None, [
+        self.matcher.add('N', None, [
             {"TEXT": {"REGEX" : self.__tnm_rules['N']}},
             {"ORTH": '(' },
             {"TEXT": {"REGEX" : self.__lymphnode_pattern}},
             {"ORTH": ')' }
         ])
 
-        for k, v in self.__tnm_rules.items():
-            if (k != 'N'):
-                self.matcher.add(k, None, [
-                    {"TEXT": {"REGEX" : v}}
-                ])
+        #for k, v in self.__tnm_rules.items():
+        #    self.matcher.add(k, None, [
+        #        {"TEXT": {"REGEX" : v}}
+        #    ])
        
     def transform(self, text):
         doc = self.nlp(text)        

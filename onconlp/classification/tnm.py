@@ -13,7 +13,7 @@ class TNMClassification:
 
     def setvalue(self, key, value):
         self.__checkkey(key)
-        if key in self.values:
+        if key in self.values and not value.contains(self.values[key]):
             raise Exception('Property %s can only be written once' % key)
         self.values[key] = value
         setattr(self, key, value)
@@ -37,6 +37,9 @@ class Match(object):
         self.start = span[0].idx
         self.end = span[0].idx + len(span.text)
     
+    def contains(self, other):
+        return self.start <= other.start and self.end >= other.end 
+
     def __repr__(self):
         return 'Match (%s, %d, %d)' % (self.token, self.start, self.end)
 
