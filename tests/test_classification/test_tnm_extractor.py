@@ -47,7 +47,7 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
         self.check_match(tnm.T, 'pT1', ['p'], 'T1', 0, 3)
-        self.check_match(tnm.N, 'pN1 (5/13)', ['c'], 'N1', 4, 7)
+        self.check_match(tnm.N, 'pN1 (5/13)', ['p'], 'N1', 4, 14)
         self.assertNull(tnm, ['T', 'N'])
 
     #### Real-world examples

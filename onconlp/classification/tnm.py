@@ -30,18 +30,20 @@ class TNMClassification:
         return 'TNM(%s)' % ', '.join(res)
 
 class Match(object):
-    def __init__(self, span, prefix, value):
+    def __init__(self, span, prefix, value, details):
         self.token = span.text
         self.prefix = prefix
         self.value = value
         self.start = span[0].idx
+        self.details = details
         self.end = span[0].idx + len(span.text)
     
     def contains(self, other):
         return self.start <= other.start and self.end >= other.end 
 
     def __repr__(self):
-        return 'Match (%s, %d, %d)' % (self.token, self.start, self.end)
+        return 'Match (%s | %s | %s, %d, %d)' % \
+            (self.prefix, self.value, self.details, self.start, self.end)
 
 from onconlp.classification import rulebased_tnm
 
