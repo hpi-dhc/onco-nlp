@@ -6,23 +6,26 @@ import regex as re
 
 class RuleTNMExtractor():
 
-    tnm_rules = {
-        'T' : "[yr]?[ry]?[pc]?T([0-4][ab]?|is|a|X)",
-        'N' : "[yr]?[ry]?[pc]?N([0-3]|X)",
-        'M' : "[yr]?[ry]?[pc]?M([0-1]|X)",
-        'L' : "L[0-1]",
-        'V' : "V[0-2]",
-        'Pn': "Pn[0-1]",
-        'SX': "SX[0-3X]",
-        'R' : "R[0-2]",
-        'G' : "G[1-4]"
+    __tnm_rules = {
+        'T' : r"[yr]?[ry]?[pc]?T([0-4][ab]?|is|a|X)",
+        'N' : r"[yr]?[ry]?[pc]?N([0-3]|X)",
+        'M' : r"[yr]?[ry]?[pc]?M([0-1]|X)",
+        'L' : r"L[0-1]",
+        'V' : r"V[0-2]",
+        'Pn': r"Pn[0-1]",
+        'SX': r"SX[0-3X]",
+        'R' : r"R[0-2]",
+        'G' : r"G[1-4]"
     }
+
+    __lymphnode_pattern = r'\( ?\d+ ?\/ ?\d+ ?\)'
 
     def __init__(self, language):
         self.nlp = spacy.load(language)
         rules = self.nlp.Defaults.tokenizer_exceptions
         prefixes = list(self.nlp.Defaults.prefixes)
-        prefixes.extend(self.tnm_rules.values())
+        prefixes.extend(self.__tnm_rules.values())
+        prefixes.append(self.__lymphnode_pattern)
         prefixes = spacy.util.compile_prefix_regex(tuple(prefixes)).search
         suffixes = spacy.util.compile_suffix_regex(self.nlp.Defaults.suffixes).search
         infixes = spacy.util.compile_infix_regex(self.nlp.Defaults.infixes).finditer
@@ -33,11 +36,18 @@ class RuleTNMExtractor():
                                 suffix_search=suffixes,
                                 infix_finditer=infixes)
         self.matcher = Matcher(self.nlp.vocab)
-        for k, v in self.tnm_rules.items():
-            self.matcher.add(k, None, [
-                {"TEXT": {"REGEX" : v}}
-            ])
+        # Special handling for lymph node details
+        self.matcher.add('N', None, [
+            {"TEXT": {"REGEX" : self.__tnm_rules['N']}},
+            {"TEXT": {"REGEX" : self.__lymphnode_pattern}}
+        ])
 
+        for k, v in self.__tnm_rules.items():
+            if (k != 'N'):
+                self.matcher.add(k, None, [
+                    {"TEXT": {"REGEX" : v}}
+                ])
+       
     def transform(self, text):
         doc = self.nlp(text)        
         matches = self.matcher(doc)
@@ -49,7 +59,7 @@ class RuleTNMExtractor():
             if cur_result.hasvalue(tnmcomponent):
                 results.append(cur_result)
                 cur_result = TNMClassification()
-            m = re.match('([yr]?)([yr]?)([pc]?)(.*)', span.text)
+            m = re.match(r'([yr]?)([yr]?)([pc]?)(.*)', span.text)
             prefixes = []
             for i in range(1, 4):
                 prefix = m.group(i)

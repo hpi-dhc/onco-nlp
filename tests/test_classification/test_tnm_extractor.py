@@ -16,6 +16,8 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(elem.start, start)
         self.assertEqual(elem.end, end)
 
+    #### Basic tests
+
     def test_TNM_Single(self):
         tnms = TNMExtractor().transform('T1')
         self.assertEqual(len(tnms), 1)
@@ -40,6 +42,16 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.N, 'cN1', ['c'], 'N1', 4, 7)
         self.assertNull(tnm, ['T', 'N'])
 
+    def test_TNM_Lymphnodes(self):
+        tnms = TNMExtractor().transform('pT1 pN1 (5/13)')
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'pT1', ['p'], 'T1', 0, 3)
+        self.check_match(tnm.N, 'pN1 (5/13)', ['c'], 'N1', 4, 7)
+        self.assertNull(tnm, ['T', 'N'])
+
+    #### Real-world examples
+
     def test_TNM_Prefix_Neoadjuvant(self):
         tnms = TNMExtractor().transform('ypT0N0M0')
         self.assertEqual(len(tnms), 1)
@@ -58,7 +70,7 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.M, 'M0', None, 'M0', 7, 9)
         self.assertNull(tnm, ['T', 'N', 'M'])
 
-    def test_single_sentence(self):
+    def test_TNM_single_sentence(self):
         text = """TNM (8. Aufl.): pT1b, pNX, L0, V0
         Grading: G2
 
@@ -74,6 +86,42 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.G, 'G2', None, 'G2', 51, 53)
         self.check_match(tnm.R, 'R0', None, 'R0', 89, 91)
         self.assertNull(tnm, ['T', 'N', 'L', 'V', 'G', 'R'])
+
+    def test_TNM_grading_1(self):
+        text = "2. Grading (1/2/3) G3 "
+        tnms = TNMExtractor().transform(text)
+
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.G, 'G3', None, 'G3', 19, 21)
+        self.assertNull(tnm, ['G'])
+
+    def test_TNM_grading_2(self):
+        text = "2. Grading (1/2/3) G2 "
+        tnms = TNMExtractor().transform(text)
+
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.G, 'G2', None, 'G2', 19, 21)
+        self.assertNull(tnm, ['G'])
+
+    def test_TNM_grading_3(self):
+        text = "2. Grading (1, 2, 3) G2"
+        tnms = TNMExtractor().transform(text)
+
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.G, 'G2', None, 'G2', 21, 23)
+        self.assertNull(tnm, ['G'])
+
+    def test_TNM_grading_4(self):
+        text = "2. Grading (1, 2, 3) G3 "
+        tnms = TNMExtractor().transform(text)
+
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.G, 'G3', None, 'G3', 21, 23)
+        self.assertNull(tnm, ['G'])
        
 
 if __name__ == '__main__':
