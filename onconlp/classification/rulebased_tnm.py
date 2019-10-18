@@ -1,47 +1,61 @@
 from onconlp.classification.tnm import TNMClassification, Match
+from onconlp.spacy_util import load_spacy
 import spacy
 from spacy.matcher import Matcher
 from spacy.tokenizer import Tokenizer
 import regex as re
+import sys
 
 class RuleTNMExtractor():
 
     __tnm_rules = {
-        'T' : r"[yr]?[ry]?[pc]?T([0-4][ab]?|is|a|X)",
-        'N' : r"[yr]?[ry]?[pc]?N([0-3]|X)",
-        'M' : r"[yr]?[ry]?[pc]?M([0-1]|X)",
-        'L' : r"L[0-1]",
-        'V' : r"V[0-2]",
-        'Pn': r"Pn[0-1]",
+        'T' : r"[yr]?[ry]?[pc]?T([0-4][a-d]?|is|a|X)",
+        'N' : r"[yr]?[ry]?[pc]?N([0-3][a-d]?|X)",
+        'M' : r"[yr]?[ry]?[pc]?M([0-1][a-b]?|X)",
+        'L' : r"L[0-1X]",
+        'V' : r"V[0-2X]",
+        'Pn': r"Pn[0-1X]",
         'SX': r"SX[0-3X]",
         'R' : r"R[0-2][ab]?",
-        'G' : r"G[1-4]"
+        'G' : r"G[1-4X]"
     }
 
-    def __init__(self, language):
-        self.nlp = spacy.load(language)
-        rules = self.nlp.Defaults.tokenizer_exceptions
-        prefixes = list(self.nlp.Defaults.prefixes)
-        prefixes.extend(self.__tnm_rules.values())
+    
 
+    def __init__(self, language):
+        self.nlp = load_spacy(language)
+        rules = self.nlp.Defaults.tokenizer_exceptions
+        
+        tnm_prefixes = self.__tnm_rules.values()
+
+        infixes = list(self.nlp.Defaults.infixes)
+        infixes.extend(tnm_prefixes)
+        infixes.extend([r'\(', r'\)'])
+        infixes = spacy.util.compile_infix_regex(tuple(infixes)).finditer
+        
+        prefixes = list(self.nlp.Defaults.prefixes)
+        prefixes.extend(tnm_prefixes)
         prefixes = spacy.util.compile_prefix_regex(tuple(prefixes)).search
-        suffixes = spacy.util.compile_suffix_regex(self.nlp.Defaults.suffixes).search
-        infixes = spacy.util.compile_infix_regex(self.nlp.Defaults.infixes).finditer
+
+        suffixes = list(self.nlp.Defaults.suffixes)
+        suffixes.extend(tnm_prefixes)
+        suffixes = spacy.util.compile_suffix_regex(tuple(suffixes)).search
 
         self.nlp.tokenizer = Tokenizer(self.nlp.vocab, 
                                        rules=rules,
                                        prefix_search=prefixes,
                                        suffix_search=suffixes,
-                                       infix_finditer=infixes)
+                                       infix_finditer=infixes,
+                                       )
         self.matcher = Matcher(self.nlp.vocab)
-        # Special handling for lymph node details
-       
+        
         for k, v in self.__tnm_rules.items():
             self.matcher.add(k, None, [
                 {"TEXT": {"REGEX" : v}}
             ])
             self.matcher.add(k, None, [
                 {"TEXT": {"REGEX" : v}},
+                {"TEXT": {"REGEX" : r'\s'}, "OP" : "*"},
                 {"TEXT": '(' },
                 {"TEXT": {"REGEX" : r'[^\(\)]*'}, "OP": "+"},
                 {"TEXT": ')' }
@@ -67,10 +81,11 @@ class RuleTNMExtractor():
                 not Match(span, None, value, None).contains(getattr(cur_result, tnmcomponent)):
                 results.append(cur_result)
                 cur_result = TNMClassification()
+            details = {}
             if tnmcomponent is 'N':
-                details, value = self.get_details_n(value)
+                details, value = self.add_details_n(value, details)
             else:
-                details, value = self.get_details(value)
+                details, value = self.add_details(value, details)
             if tnmcomponent in ['T', 'N', 'M'] and \
                 prefixes:
                 cur_result.setvalue(tnmcomponent, Match(span, prefixes, value, details))
@@ -80,9 +95,7 @@ class RuleTNMExtractor():
             results.append(cur_result)
         return results
     
-    __lymphnode_pattern = r'(\d+) ?\/ ?(\d+)'
-
-    def get_details(self, value, details={}):
+    def add_details(self, value, details):
         # Any expression within braces
         match = re.search(r'\((.*)\)', value)
         if match:
@@ -92,11 +105,11 @@ class RuleTNMExtractor():
             value = value[0:match.start()].strip()
         return details, value
 
-    def get_details_n(self, value, details={}):
-        match = re.search(self.__lymphnode_pattern, value)
+    def add_details_n(self, value, details):
+        match = re.search(r'(\d+) ?\/ ?(\d+)', value)
         if match:
-            details['lymphnodes_affected'] = match.group(1)
-            details['lymphnodes_examined'] = match.group(2)
+            details['lymphnodes_affected'] = int(match.group(1))
+            details['lymphnodes_examined'] = int(match.group(2))
             value = value[:match.start()] + value[match.end():]
         # Any expression within braces
-        return self.get_details(value, details)
+        return self.add_details(value, details)

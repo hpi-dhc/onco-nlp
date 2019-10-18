@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="Florian Borchert",
     author_email="florian.borchert@hpi.de",
-    description="A simple library for tumor staging from free-text",
+    description="A simple library for medical information extraction from free-text",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://gitlab.hpi.de/florian.borchert/onconlp",
@@ -19,7 +19,9 @@ setuptools.setup(
     ],
     install_requires=[
         'nose2',
-        'spacy'
+        'spacy >= 2.2.0',
+        'de_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-2.2.0/de_core_news_sm-2.2.0.tar.gz',
+        'en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.2.0/en_core_web_sm-2.2.0.tar.gz'
     ],
     python_requires='>=3.6',
 )
