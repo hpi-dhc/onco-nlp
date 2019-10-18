@@ -12,15 +12,13 @@ class RuleTNMExtractor():
         'T' : r"[yr]?[ry]?[pc]?T([0-4][a-d]?|is|a|X)",
         'N' : r"[yr]?[ry]?[pc]?N([0-3][a-d]?|X)",
         'M' : r"[yr]?[ry]?[pc]?M([0-1][a-b]?|X)",
-        'L' : r"L[0-1X]",
-        'V' : r"V[0-2X]",
-        'Pn': r"Pn[0-1X]",
-        'SX': r"SX[0-3X]",
-        'R' : r"R[0-2][ab]?",
+        'L' : r"[pc]?L[0-1X]",
+        'V' : r"[pc]?V[0-2X]",
+        'Pn': r"[pc]?Pn[0-1X]",
+        'SX': r"[pc]?SX[0-3X]",
+        'R' : r"[pc]?R[0-2][ab]?",
         'G' : r"G[1-4X]"
     }
-
-    
 
     def __init__(self, language):
         self.nlp = load_spacy(language)
@@ -29,16 +27,16 @@ class RuleTNMExtractor():
         tnm_prefixes = self.__tnm_rules.values()
 
         infixes = list(self.nlp.Defaults.infixes)
-        infixes.extend(tnm_prefixes)
-        infixes.extend([r'\(', r'\)'])
+        #infixes.extend(tnm_prefixes)
+        infixes.append(r'[\(\)-]')
         infixes = spacy.util.compile_infix_regex(tuple(infixes)).finditer
         
         prefixes = list(self.nlp.Defaults.prefixes)
         prefixes.extend(tnm_prefixes)
+        prefixes.append(r'[-/"§\$&\\]')
         prefixes = spacy.util.compile_prefix_regex(tuple(prefixes)).search
 
         suffixes = list(self.nlp.Defaults.suffixes)
-        suffixes.extend(tnm_prefixes)
         suffixes = spacy.util.compile_suffix_regex(tuple(suffixes)).search
 
         self.nlp.tokenizer = Tokenizer(self.nlp.vocab, 
@@ -51,10 +49,10 @@ class RuleTNMExtractor():
         
         for k, v in self.__tnm_rules.items():
             self.matcher.add(k, None, [
-                {"TEXT": {"REGEX" : v}}
+                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v}}
             ])
             self.matcher.add(k, None, [
-                {"TEXT": {"REGEX" : v}},
+                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v}},
                 {"TEXT": {"REGEX" : r'\s'}, "OP" : "*"},
                 {"TEXT": '(' },
                 {"TEXT": {"REGEX" : r'[^\(\)]*'}, "OP": "+"},
@@ -86,11 +84,7 @@ class RuleTNMExtractor():
                 details, value = self.add_details_n(value, details)
             else:
                 details, value = self.add_details(value, details)
-            if tnmcomponent in ['T', 'N', 'M'] and \
-                prefixes:
-                cur_result.setvalue(tnmcomponent, Match(span, prefixes, value, details))
-            else:
-                cur_result.setvalue(tnmcomponent, Match(span, None, value, details))
+            cur_result.setvalue(tnmcomponent, Match(span, prefixes, value, details))
         if not cur_result.empty():
             results.append(cur_result)
         return results
