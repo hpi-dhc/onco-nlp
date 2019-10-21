@@ -325,6 +325,90 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
         self.check_match(tnm.T, 'pT2', ['p'], 'T2', {}, 43, 46)
+        self.check_match(tnm.N, 'pN1(2/22)', ['p'], 'N1', {
+            "lymphnodes_affected" : 2, "lymphnodes_examined" : 22}, 48, 57)
+        self.check_match(tnm.G, 'G2', [], 'G2', {}, 59, 61)
+        self.check_match(tnm.L, 'L1', [], 'L1', {}, 63, 65)        
+        self.check_match(tnm.V, 'V0', [], 'V0', {}, 67, 69)
+        self.check_match(tnm.Pn, 'Pn1', [], 'Pn1', {}, 71, 74)
+        self.check_match(tnm.R, 'R0 (lokal)', [], 'R0', {
+            "other" : 'lokal' }, 76, 86)
+        self.assertIsNone(tnm.M)
+        self.assertIsNone(tnm.SX)
+
+    def test_histo_lymph_2(self):
+        text = "UICC-Klassifikation (8. Auflage, 2017): 14. pT2, pN1 (3/13, max. 1,8 cm), L1, V0, Pn1, R1 (dorsal), CRM positiv"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'pT2', ['p'], 'T2', {}, 44, 47)
+        self.check_match(tnm.N, 'pN1 (3/13, max. 1,8 cm)', ['p'], 'N1', {
+            "lymphnodes_affected" : 3, "lymphnodes_examined" : 13, "other" : 'max. 1,8 cm'}, 49, 72)
+        self.check_match(tnm.L, 'L1', [], 'L1', {}, 74, 76)        
+        self.check_match(tnm.V, 'V0', [], 'V0', {}, 78, 80)
+        self.check_match(tnm.Pn, 'Pn1', [], 'Pn1', {}, 82, 85)
+        self.check_match(tnm.R, 'R1 (dorsal)', [], 'R1', {
+            "other" : 'dorsal' }, 87, 98)
+        self.assertIsNone(tnm.M)
+        self.assertIsNone(tnm.G)
+        self.assertIsNone(tnm.SX)
+
+    def test_histo_lymph_3(self):
+        text = "UICC-Klassifikation (8. Auflage, 2017): 20. pT3, pN2(4/21), pMX - G2, L1, V1, Pn1, R1"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'pT3', ['p'], 'T3', {}, 44, 47)
+        self.check_match(tnm.N, 'pN2(4/21)', ['p'], 'N2', {
+            "lymphnodes_affected" : 4, "lymphnodes_examined" : 21
+        }, 49, 58)
+        self.check_match(tnm.M, 'pMX', ['p'], 'MX', {}, 60, 63)
+        self.check_match(tnm.G, 'G2', [], 'G2', {}, 66, 68)
+        self.check_match(tnm.L, 'L1', [], 'L1', {}, 70, 72)
+        self.check_match(tnm.V, 'V1', [], 'V1', {}, 74, 76)
+        self.check_match(tnm.Pn, 'Pn1', [], 'Pn1', {}, 78, 81)
+        self.check_match(tnm.R, 'R1', [], 'R1', {}, 83, 85)
+        self.assertIsNone(tnm.SX)
+
+    def test_histo_lymph_4(self):
+        text = "UICC-Klassifikation (8. Auflage, 2017): 19. pT3 (5 cm), pN1(2/12), Pn1, L0, V1, G2, R1 (Gallengangs- und Pankreasabsetzungsrand)"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'pT3 (5 cm)', ['p'], 'T3', {"other" : "5 cm"}, 44, 54)
+        self.check_match(tnm.N, 'pN1(2/12)', ['p'], 'N1', {
+            "lymphnodes_affected" : 2, "lymphnodes_examined" : 12
+        }, 56, 65)
+        self.check_match(tnm.Pn, 'Pn1', [], 'Pn1', {}, 67, 70)
+        self.check_match(tnm.L, 'L0', [], 'L0', {}, 72, 74)
+        self.check_match(tnm.V, 'V1', [], 'V1', {}, 76, 78)
+        self.check_match(tnm.G, 'G2', [], 'G2', {}, 80, 82)
+        self.check_match(tnm.R, 'R1 (Gallengangs- und Pankreasabsetzungsrand)', 
+            [], 'R1', {"other" : 'Gallengangs- und Pankreasabsetzungsrand'}, 84, 128)
+        self.assertIsNone(tnm.M)
+        self.assertIsNone(tnm.SX)
+
+    def test_resection_1(self):
+        text = "11. R-Status 0 "
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.R, 'R-Status 0', [], 'R0', {}, 4, 14)
+
+    def test_resection_2(self):
+        text = "8. R-Status 1 (intraparenchymatöser Absetzungsrand)"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.R, 'R-Status 1 (intraparenchymatöser Absetzungsrand)', [], 'R1', 
+            {"other": 'intraparenchymatöser Absetzungsrand'}, 3, 51)
+
+    def test_v_status(self):
+        text = "V-Status 1"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.V, 'V-Status 1', [], 'V1', {}, 0, 10)
 
 if __name__ == '__main__':
     unittest.main()
