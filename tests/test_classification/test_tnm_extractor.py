@@ -42,7 +42,7 @@ class TestTNMExtractor(unittest.TestCase):
              'T2a', 'T2b', 'T2c', 'T2d', 
              'T3a', 'T3b', 'T3c', 'T3d', 
              'T4a', 'T4b', 'T4c', 'T4d', 
-             'Tis', 'Ta', 'TX'])            
+             'Tis', 'Ta', 'TX', 'Tx'])            
 
     def test_tnm_t_simple_negative(self):
         self.check_simple_range_negative('T', ['T5', 'T', 'Tb', 'Tc', 'T-'])            
@@ -53,7 +53,7 @@ class TestTNMExtractor(unittest.TestCase):
             'N1a', 'N1b', 'N1c', 'N1d', 
             'N2a', 'N2b', 'N2c', 'N2d', 
             'N3a', 'N3b', 'N3c', 'N3d', 
-            'NX'
+            'NX', 'Nx'
         ])
 
     def test_tnm_n_simple_negative(self):
@@ -110,7 +110,7 @@ class TestTNMExtractor(unittest.TestCase):
 
     def test_tnm_m_simple(self):
         self.check_simple_range('M', 
-            ['M0', 'M1', 'M1a', 'M1b', 'MX'])        
+            ['M0', 'M1', 'M1a', 'M1b', 'MX', 'Mx'])        
 
     def test_tnm_m_simple_negative(self):
         self.check_simple_range_negative('M', 
@@ -118,7 +118,7 @@ class TestTNMExtractor(unittest.TestCase):
 
     def test_tnm_grading_simple(self):
         self.check_simple_range('G', 
-            ['G1', 'G2', 'G3', 'G4', 'GX'])    
+            ['G1', 'G2', 'G3', 'G4', 'GX', 'Gx'])    
 
     def test_tnm_grading_simple_negative(self):
         self.check_simple_range_negative('G', 

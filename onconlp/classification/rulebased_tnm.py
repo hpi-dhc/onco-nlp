@@ -1,4 +1,4 @@
-from onconlp.classification.tnm import TNMClassification, Match
+from onconlp.classification.tnm import TNMClassification, TNMMatch
 from onconlp.spacy_util import load_spacy
 import spacy
 from spacy.matcher import Matcher
@@ -9,15 +9,15 @@ import sys
 class RuleTNMExtractor():
 
     __tnm_rules = {
-        'T' : r"[yr]?[ry]?[pc]?T([0-4][a-d]?|is|a|X)",
-        'N' : r"[yr]?[ry]?[pc]?N([0-3][a-d]?|X)",
-        'M' : r"[yr]?[ry]?[pc]?M([0-1][a-b]?|X)",
-        'L' : r"[pc]?L[0-1X]",
-        'V' : r"[pc]?V[0-2X]",
-        'Pn': r"[pc]?Pn[0-1X]",
-        'SX': r"[pc]?SX[0-3X]",
+        'T' : r"[yr]?[ry]?[pc]?T([0-4][a-d]?|is|a|X|x)",
+        'N' : r"[yr]?[ry]?[pc]?N([0-3][a-d]?|X|x)",
+        'M' : r"[yr]?[ry]?[pc]?M([0-1][a-b]?|X|x)",
+        'L' : r"[pc]?L[0-1Xx]",
+        'V' : r"[pc]?V[0-2Xx]",
+        'Pn': r"[pc]?Pn[0-1Xx]",
+        'SX': r"[pc]?SX[0-3Xx]",
         'R' : r"[pc]?R[0-2][ab]?",
-        'G' : r"G[1-4X]"
+        'G' : r"G[1-4Xx]"
     }
 
     def __init__(self, language):
@@ -87,9 +87,9 @@ class RuleTNMExtractor():
                     {"TEXT": ')' }
             ])
         add('R',  "^[0-2][ab]?")
-        add('V',  "^[0-2X]")
-        add('Pn', "^[0-1X]")
-        add('L',  "^[0-1X]")
+        add('V',  "^[0-2Xx]")
+        add('Pn', "^[0-1Xx]")
+        add('L',  "^[0-1Xx]")
 
     def transform(self, text):
         doc = self.nlp(text)        
@@ -108,7 +108,7 @@ class RuleTNMExtractor():
             value = match.group(4)
             # Component already seen, so start new TNM expression
             if cur_result.hasvalue(tnmcomponent) and \
-                not Match(span, None, value, None).contains(getattr(cur_result, tnmcomponent)):
+                not TNMMatch(span, None, value, None).contains(getattr(cur_result, tnmcomponent)):
                 results.append(cur_result)
                 cur_result = TNMClassification()
             details = {}
@@ -117,7 +117,7 @@ class RuleTNMExtractor():
             else:
                 details, value = self.add_details(value, details)
             value = self.normalize_value(value)
-            cur_result.setvalue(tnmcomponent, Match(span, prefixes, value, details))
+            cur_result.setvalue(tnmcomponent, TNMMatch(span, prefixes, value, details))
         if not cur_result.empty():
             results.append(cur_result)
         return results
