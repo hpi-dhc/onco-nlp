@@ -42,3 +42,7 @@ class TestICD_O_Extractor(unittest.TestCase):
         self.assertEqual(codes[1].start, 8)
         self.assertEqual(codes[1].end, 14)
         self.assertEqual(codes[1].value, '6789/8')
+
+    def test_morphology_error(self):
+        result = extractor.transform('12345/3')
+        self.assertEquals(result, {})

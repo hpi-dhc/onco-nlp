@@ -27,7 +27,7 @@ class RuleICD_O_Extractor():
         self.matcher = Matcher(self.nlp.vocab)
 
         self.matcher.add('morphology', None, [
-             {"TEXT": {"REGEX" : r'\d\d\d\d'}},
+             {"TEXT": {"REGEX" : r'^\d\d\d\d$'}},
              {"TEXT": {"REGEX" : r'\s'}, "OP" : "*"},
              {"TEXT": '/'},
              {"TEXT": {"REGEX" : r'\s'}, "OP" : "*"},
