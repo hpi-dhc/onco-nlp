@@ -19,9 +19,9 @@ setuptools.setup(
     ],
     install_requires=[
         'nose2',
-        'spacy >= 2.2.0',
-        'de_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-2.2.0/de_core_news_sm-2.2.0.tar.gz',
-        'en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.2.0/en_core_web_sm-2.2.0.tar.gz'
+        'spacy == 2.1.0',
+        'de_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-2.1.0/de_core_news_sm-2.1.0.tar.gz',
+        'en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.1.0/en_core_web_sm-2.1.0.tar.gz'
     ],
     python_requires='>=3.6',
 )
