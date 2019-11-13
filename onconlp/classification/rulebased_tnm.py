@@ -9,18 +9,19 @@ import sys
 class RuleTNMExtractor():
 
     __tnm_rules = {
-        'T' : r"[yr]?[ry]?[pc]?T([0-4][a-d]?|is|a|X|x)",
-        'N' : r"[yr]?[ry]?[pc]?N([0-3][a-d]?|X|x)",
-        'M' : r"[yr]?[ry]?[pc]?M([0-1][a-b]?|X|x)",
-        'L' : r"[pc]?L[0-1Xx]",
-        'V' : r"[pc]?V[0-2Xx]",
-        'Pn': r"[pc]?Pn[0-1Xx]",
-        'SX': r"[pc]?SX[0-3Xx]",
-        'R' : r"[pc]?R[0-2][ab]?",
-        'G' : r"G[1-4Xx]"
+        'T' : (r"[yr]?[ry]?[pc]?T", r"([0-4][a-d]?|is|a|X|x)"),
+        'N' : (r"[yr]?[ry]?[pc]?N", r"([0-3][a-d]?|X|x)"),
+        'M' : (r"[yr]?[ry]?[pc]?M", r"([0-1][a-b]?|X|x)"),
+        'L' : (r"[pc]?L", r"[0-1Xx]"),
+        'V' : (r"[pc]?V", r"[0-2Xx]"),
+        'Pn': (r"[pc]?Pn", r"[0-1Xx]"),
+        'SX': (r"[pc]?SX", r"[0-3Xx]"),
+        'R' : (r"[pc]?R", r"[0-2][ab]?"),
+        'G' : (r"G", r"[1-4Xx]")
     }
 
-    def __init__(self, language):
+    def __init__(self, language, allow_spaces=False):
+        self.allow_spaces = allow_spaces
         self.nlp = load_spacy(language)
         rules = self.nlp.Defaults.tokenizer_exceptions
         
@@ -29,7 +30,7 @@ class RuleTNMExtractor():
         infixes = spacy.util.compile_infix_regex(tuple(infixes)).finditer
 
         prefixes = list(self.nlp.Defaults.prefixes)
-        prefixes.extend(list(self.__tnm_rules.values()))
+        prefixes.extend(list([v[0] + v[1] for v in self.__tnm_rules.values()]))
         prefixes.append(r'[-/"§\$&\\]')
         prefixes = spacy.util.compile_prefix_regex(tuple(prefixes)).search
 
@@ -46,11 +47,26 @@ class RuleTNMExtractor():
         self.matcher = Matcher(self.nlp.vocab)
         
         def add_rule(k, v):
+            if allow_spaces:
+                # Multi-token version (e.g., spaces betw. T 1 instead of T1)
+                self.matcher.add(k, None, [
+                    {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + '$'}},
+                    {"TEXT": {"REGEX" : v[1]}}
+                ])
+                self.matcher.add(k, None, [
+                    {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + '$'}},
+                    {"TEXT": {"REGEX" : v[1]}},
+                    {"TEXT": {"REGEX" : r'\s'}, "OP" : "*"},
+                    {"TEXT": '(' },
+                    {"TEXT": {"REGEX" : r'[^\(\)]'}, "OP": "+"},
+                    {"TEXT": ')' }
+                ])
+            # Single-token version
             self.matcher.add(k, None, [
-                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v}}
+                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1]}}
             ])
             self.matcher.add(k, None, [
-                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v}},
+                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1]}},
                 {"TEXT": {"REGEX" : r'\s'}, "OP" : "*"},
                 {"TEXT": '(' },
                 {"TEXT": {"REGEX" : r'[^\(\)]'}, "OP": "+"},
@@ -126,7 +142,7 @@ class RuleTNMExtractor():
         m = re.match(r'(R|V|L|Pn)-Status.*(\d[ab]?)', value)
         if m:
             return m.group(1) + m.group(2)
-        return value
+        return re.sub(' ', '', value)
 
     def add_details(self, value, details):
         # Any expression within braces

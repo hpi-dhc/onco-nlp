@@ -45,8 +45,8 @@ from onconlp.classification import rulebased_tnm
 
 class TNMExtractor:
 
-    def __init__(self, language='de'):
-        self._impl = rulebased_tnm.RuleTNMExtractor(language)
+    def __init__(self, language='de', allow_spaces=False):
+        self._impl = rulebased_tnm.RuleTNMExtractor(language, allow_spaces)
 
     def transform(self, text):
         return self._impl.transform(text)

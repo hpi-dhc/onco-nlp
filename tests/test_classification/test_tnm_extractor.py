@@ -388,6 +388,16 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertIsNone(tnm.M)
         self.assertIsNone(tnm.SX)
 
+    def test_complex(self):
+        text = "TNM (7.Aufl.): pT2c, MX (0/2 sn), Grading: GX R-Klassifikation (lokal): R0 ICD-O (3. Aufl.): 8522/3 ICD-10: C 49.9"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'pT2c', ['p'], 'T2c', {}, 15, 19)
+        self.check_match(tnm.M, 'MX (0/2 sn)', [], 'MX', {'other' : '0/2 sn'}, 21, 32)
+        self.check_match(tnm.G, 'GX', [], 'GX', {}, 43, 45)
+        self.check_match(tnm.R, 'R0', [], 'R0', {}, 72, 74)
+
     def test_resection_1(self):
         text = "11. R-Status 0 "
         tnms = self.extractor.transform(text)
@@ -409,6 +419,21 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
         self.check_match(tnm.V, 'V-Status 1', [], 'V1', {}, 0, 10)
+
+    def test_spaces(self):
+        text = "Tumorstadium: T 2, pN X, pM X - G-II."
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 0)
+
+        ex = TNMExtractor(language='de', allow_spaces=True)
+        tnms = ex.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'T 2', [], 'T2', {}, 14, 17)
+        self.check_match(tnm.N, 'pN X', ['p'], 'NX', {}, 19, 23)
+        self.check_match(tnm.M, 'pM X', ['p'], 'MX', {}, 25, 29)
+        self.assertIsNone(tnm.G)
+
 
 if __name__ == '__main__':
     unittest.main()
