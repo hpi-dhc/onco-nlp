@@ -15,6 +15,8 @@ class TNMClassification:
         self.__checkkey(key)
         if key in self.values and not value.contains(self.values[key]):
             raise Exception('Property %s can only be written once' % key)
+        if not value:
+            return
         self.values[key] = value
         setattr(self, key, value)
 
