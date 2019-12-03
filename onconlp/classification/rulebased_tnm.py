@@ -20,8 +20,9 @@ class RuleTNMExtractor():
         'G' : (r"G", r"[1-4Xx]")
     }
 
-    def __init__(self, language, allow_spaces=False):
+    def __init__(self, language, allow_spaces=False, merge_matches=False):
         self.allow_spaces = allow_spaces
+        self.merge_matches = merge_matches
         self.nlp = load_spacy(language)
         rules = self.nlp.Defaults.tokenizer_exceptions
         
@@ -136,6 +137,8 @@ class RuleTNMExtractor():
             cur_result.setvalue(tnmcomponent, TNMMatch(span, prefixes, value, details))
         if not cur_result.empty():
             results.append(cur_result)
+        if self.merge_matches:
+            return self.do_merge_matches(results)
         return results
     
     def normalize_value(self, value):
@@ -162,3 +165,22 @@ class RuleTNMExtractor():
             value = value[:match.start()] + value[match.end():]
         # Any expression within braces
         return self.add_details(value, details)
+
+    def do_merge_matches(self, classifications):
+        """ Merge non-conflicting TNM matches"""
+        result = []
+        cur_tnm = None
+        for tnm in classifications:
+            if not cur_tnm:
+                cur_tnm = tnm
+                continue
+            merged = cur_tnm.merge(tnm)
+            if merged:
+                cur_tnm = merged
+            else:
+                result.append(cur_tnm)
+                result.append(tnm)
+                cur_tnm = None
+        if cur_tnm:
+            result.append(cur_tnm)
+        return result

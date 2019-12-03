@@ -29,6 +29,20 @@ class TNMClassification:
         res = [ ('%s: %s' % (key, self.values[key])) for key in self.__keyset if self.hasvalue(key)]
         return 'TNM(%s)' % ', '.join(res)
 
+    def merge(self, other_classification):
+        merged = TNMClassification()
+        for k in self.__keyset:
+            if not self.hasvalue(k):
+                merged.setvalue(k, getattr(other_classification, k))
+            elif not other_classification.hasvalue(k):
+                merged.setvalue(k, getattr(self, k))
+            else:
+                m = getattr(self, k).merge(getattr(other_classification, k))
+                if not m:
+                    return None #mismatch
+                merged.setvalue(k, m)
+        return merged
+
 from onconlp.match import Match
 
 class TNMMatch(Match):
@@ -41,12 +55,27 @@ class TNMMatch(Match):
         return 'TNM-Match (%s | %s | %s, %d, %d)' % \
             (self.prefix, self.value, self.details, self.start, self.end)
 
+    def merge(self, other):
+        if other is None:
+            return self
+        else:
+            if self.value != other.value:
+                return None
+            if self.prefix and other.prefix and self.prefix != other.prefix:
+                return None
+            if self.details and other.details and self.details != other.details:
+                return None
+            if self.prefix:
+                return self
+            else:
+                return other
+
 from onconlp.classification import rulebased_tnm
 
 class TNMExtractor:
 
-    def __init__(self, language='de', allow_spaces=False):
-        self._impl = rulebased_tnm.RuleTNMExtractor(language, allow_spaces)
+    def __init__(self, language='de', allow_spaces=False, merge_matches=False):
+        self._impl = rulebased_tnm.RuleTNMExtractor(language, allow_spaces, merge_matches)
 
     def transform(self, text):
         return self._impl.transform(text)

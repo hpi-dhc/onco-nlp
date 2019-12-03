@@ -1,5 +1,6 @@
 class Match():
     def __init__(self, span, value):
+        self.span = span
         self.token = span.text
         self.value = value
         self.start = span[0].idx

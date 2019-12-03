@@ -434,6 +434,28 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.M, 'pM X', ['p'], 'MX', {}, 25, 29)
         self.assertIsNone(tnm.G)
 
+    def test_merge(self):
+        text = "R0 T-Status T2 pT2 N0"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 2)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'T2', [], 'T2', {}, 12, 14)
+        self.check_match(tnm.R, 'R0', [], 'R0', {}, 0, 2)
+        self.assertIsNone(tnm.N)
+
+        tnm = tnms[1]
+        self.check_match(tnm.T, 'pT2', ['p'], 'T2', {}, 15, 18)
+        self.check_match(tnm.N, 'N0', [], 'N0', {}, 19, 21)
+        self.assertIsNone(tnm.R)
+
+        ex = TNMExtractor(language='de', merge_matches=True)
+        tnms = ex.transform(text)
+        tnm = tnms[0]
+        self.assertEqual(len(tnms), 1)
+        self.check_match(tnm.T, 'pT2', ['p'], 'T2', {}, 15, 18)
+        self.check_match(tnm.R, 'R0', [], 'R0', {}, 0, 2)
+        self.check_match(tnm.N, 'N0', [], 'N0', {}, 19, 21)
+
 
 if __name__ == '__main__':
     unittest.main()
