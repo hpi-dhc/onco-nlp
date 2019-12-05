@@ -442,11 +442,13 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.T, 'T2', [], 'T2', {}, 12, 14)
         self.check_match(tnm.R, 'R0', [], 'R0', {}, 0, 2)
         self.assertIsNone(tnm.N)
+        self.assertFalse(tnm.merged)
 
         tnm = tnms[1]
         self.check_match(tnm.T, 'pT2', ['p'], 'T2', {}, 15, 18)
         self.check_match(tnm.N, 'N0', [], 'N0', {}, 19, 21)
         self.assertIsNone(tnm.R)
+        self.assertFalse(tnm.merged)
 
         ex = TNMExtractor(language='de', merge_matches=True)
         tnms = ex.transform(text)
@@ -455,6 +457,7 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.T, 'pT2', ['p'], 'T2', {}, 15, 18)
         self.check_match(tnm.R, 'R0', [], 'R0', {}, 0, 2)
         self.check_match(tnm.N, 'N0', [], 'N0', {}, 19, 21)
+        self.assertTrue(tnm.merged)
 
 
 if __name__ == '__main__':

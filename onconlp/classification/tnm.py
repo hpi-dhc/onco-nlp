@@ -4,6 +4,7 @@ class TNMClassification:
 
     def __init__(self):
         self.values = {}
+        self.merged = False
         for key in self.__keyset:
             setattr(self, key, None)
 
@@ -33,6 +34,7 @@ class TNMClassification:
 
     def merge(self, other_classification):
         merged = TNMClassification()
+        merged.merged = True
         for k in self.__keyset:
             if not self.hasvalue(k):
                 merged.setvalue(k, getattr(other_classification, k))
