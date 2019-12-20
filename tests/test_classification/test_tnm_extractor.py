@@ -156,6 +156,10 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_simple_range_negative('Pn', 
             ['Pn2', 'Pn', 'P'])
 
+    def test_tnm_words(self):
+        tnms = self.extractor.transform('Tissue')
+        self.assertEqual(len(tnms), 0)
+
     def test_tnm_perineural_vs_lypmh(self):        
         # Controverial, but genes would match if too lax
         tnms = self.extractor.transform('PN1')

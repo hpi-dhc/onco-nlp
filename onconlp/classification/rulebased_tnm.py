@@ -9,9 +9,9 @@ import sys
 class RuleTNMExtractor():
 
     __tnm_rules = {
-        'T' : (r"[yr]?[ry]?[pc]?T", r"([0-4][a-d]?|is|a|X|x)"),
-        'N' : (r"[yr]?[ry]?[pc]?N", r"([0-3][a-d]?|X|x)"),
-        'M' : (r"[yr]?[ry]?[pc]?M", r"([0-1][a-b]?|X|x)"),
+        'T' : (r"[yr]?[ry]?[pc]?T", r"([0-4][a-d]?|is|a|X|x)(?![abdefghiklmnoqstuvwxz])"),
+        'N' : (r"[yr]?[ry]?[pc]?N", r"([0-3][a-d]?|X|x)(?![abdefghiklmnoqstuvwxz])"),
+        'M' : (r"[yr]?[ry]?[pc]?M", r"([0-1][a-b]?|X|x)(?![abdefghiklmnoqstuvwxz])"),
         'L' : (r"[pc]?L", r"[0-1Xx]"),
         'V' : (r"[pc]?V", r"[0-2Xx]"),
         'Pn': (r"[pc]?Pn", r"[0-1Xx]"),
