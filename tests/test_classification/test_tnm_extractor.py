@@ -159,6 +159,8 @@ class TestTNMExtractor(unittest.TestCase):
     def test_tnm_words(self):
         tnms = self.extractor.transform('Tissue')
         self.assertEqual(len(tnms), 0)
+        tnms = self.extractor.transform('Target')
+        self.assertEqual(len(tnms), 0)
 
     def test_tnm_perineural_vs_lypmh(self):        
         # Controverial, but genes would match if too lax

@@ -9,9 +9,9 @@ import sys
 class RuleTNMExtractor():
 
     __tnm_rules = {
-        'T' : (r"[yr]?[ry]?[pc]?T", r"([0-4][a-d]?|is|a|X|x)(?![abdefghiklmnoqstuvwxz])"),
-        'N' : (r"[yr]?[ry]?[pc]?N", r"([0-3][a-d]?|X|x)(?![abdefghiklmnoqstuvwxz])"),
-        'M' : (r"[yr]?[ry]?[pc]?M", r"([0-1][a-b]?|X|x)(?![abdefghiklmnoqstuvwxz])"),
+        'T' : (r"[yr]?[ry]?[pc]?T", r"([0-4][a-d]?|is|a|X|x)(?=(?:[^abdefghiklmnoqstuvwxz]{0,3}[A-Z]|\s|$))"),
+        'N' : (r"[yr]?[ry]?[pc]?N", r"([0-3][a-d]?|X|x)(?=(?:[^abdefghiklmnoqstuvwxz]{0,3}[A-Z]|\s|$))"),
+        'M' : (r"[yr]?[ry]?[pc]?M", r"([0-1][a-b]?|X|x)(?=(?:[^abdefghiklmnoqstuvwxz]{0,3}[A-Z]|\s|$))"),
         'L' : (r"[pc]?L", r"[0-1Xx]"),
         'V' : (r"[pc]?V", r"[0-2Xx]"),
         'Pn': (r"[pc]?Pn", r"[0-1Xx]"),
@@ -64,10 +64,10 @@ class RuleTNMExtractor():
                 ])
             # Single-token version
             self.matcher.add(k, None, [
-                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1]}}
+                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}}
             ])
             self.matcher.add(k, None, [
-                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1]}},
+                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}},
                 {"TEXT": {"REGEX" : r'\s'}, "OP" : "*"},
                 {"TEXT": '(' },
                 {"TEXT": {"REGEX" : r'[^\(\)]'}, "OP": "+"},
