@@ -20,10 +20,10 @@ cache:
 
 before_script:
   - python3 -V  # Print out python version for debugging
-  - pip3 install virtualenv
+  - pip install --user virtualenv
   - virtualenv venv
   - source venv/bin/activate
-  - pip3 install .
+  - pip install .
 
 test:
   script:
