@@ -23,15 +23,9 @@ before_script:
   - pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
+  - pip install .
 
 test:
   script:
     - pip install nose2  # you can also use tox
     - nose2 -v
-
-run:
-  script:
-    - python setup.py bdist_wheel
-  artifacts:
-    paths:
-      - dist/*.whl
