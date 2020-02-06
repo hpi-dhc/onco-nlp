@@ -9,14 +9,14 @@ import sys
 class RuleTNMExtractor():
 
     __tnm_rules = {
-        'T' : (r"[yr]?[ry]?[pc]?T", r"([0-4][a-d]?|is|a|X|x)(?=(?:[^abdefghiklmnoqstuvwxz]{0,3}[A-Z]|\s|$))"),
-        'N' : (r"[yr]?[ry]?[pc]?N", r"([0-3][a-d]?|X|x)(?=(?:[^abdefghiklmnoqstuvwxz]{0,3}[A-Z]|\s|$))"),
-        'M' : (r"[yr]?[ry]?[pc]?M", r"([0-1][a-b]?|X|x)(?=(?:[^abdefghiklmnoqstuvwxz]{0,3}[A-Z]|\s|$))"),
-        'L' : (r"[pc]?L", r"[0-1Xx]"),
-        'V' : (r"[pc]?V", r"[0-2Xx]"),
-        'Pn': (r"[pc]?Pn", r"[0-1Xx]"),
-        'SX': (r"[pc]?SX", r"[0-3Xx]"),
-        'R' : (r"[pc]?R", r"[0-2][ab]?"),
+        'T' : (r"[yr]?[ry]?[uapc]?T", r"([0-4][a-d]?|is|a|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
+        'N' : (r"[yr]?[ry]?[uapc]?N", r"([0-3][a-d]?|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
+        'M' : (r"[yr]?[ry]?[uapc]?M", r"([0-1][a-b]?|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
+        'L' : (r"[uapc]?L", r"[0-1Xx]"),
+        'V' : (r"[uapc]?V", r"[0-2Xx]"),
+        'Pn': (r"[uapc]?Pn", r"[0-1Xx]"),
+        'SX': (r"[uapc]?SX", r"[0-3Xx]"),
+        'R' : (r"[uapc]?R", r"[0-2][ab]?"),
         'G' : (r"G", r"[1-4Xx]")
     }
 
@@ -116,7 +116,7 @@ class RuleTNMExtractor():
         for match_id, start, end in matches:
             span = doc[start:end]  # The matched span
             tnmcomponent = self.nlp.vocab[match_id].text            
-            match = re.match(r'([yr]?)([yr]?)([pc]?)(.*)', span.text)
+            match = re.match(r'([yr]?)([yr]?)([uapc]?)(.*)', span.text)
             prefixes = []
             for i in range(1, 4):
                 prefix = match.group(i)

@@ -196,11 +196,19 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.T, 'pT1', ['p'], 'T1', {}, 0, 3)
         self.check_match(tnm.N, 'cN1', ['c'], 'N1', {}, 4, 7)
         self.assertNull(tnm, ['T', 'N'])
+
+    def test_tnm_prefix(self):
+        tnms = self.extractor.transform('aT1 uN1')
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'aT1', ['a'], 'T1', {}, 0, 3)
+        self.check_match(tnm.N, 'uN1', ['u'], 'N1', {}, 4, 7)
+        self.assertNull(tnm, ['T', 'N'])
    
     #### Corner cases
 
     def test_tnm_context_negative(self):
-        self.check_simple_range_negative('T', ['AT2', 'aT1', '1T1'])
+        self.check_simple_range_negative('T', ['AT2', '1T1'])
 
     def test_tnm_context_special_char(self):
         for t in ['(T1', '-T1', '[T1', '$T1', '/T1', '\T1', '§T1', '(T1', ')T1', ',T1']:
