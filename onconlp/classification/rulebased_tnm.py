@@ -9,9 +9,9 @@ import sys
 class RuleTNMExtractor():
 
     __tnm_rules = {
-        'T' : (r"[yr]?[ry]?[uapc]?T", r"([0-4][a-d]?|is|a|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
-        'N' : (r"[yr]?[ry]?[uapc]?N", r"([0-3][a-d]?|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
-        'M' : (r"[yr]?[ry]?[uapc]?M", r"([0-1][a-b]?|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
+        'T' : (r"[yra]{0,3}[upc]?T", r"([0-4][a-d]?|is|a|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
+        'N' : (r"[yra]{0,3}[upc]?N", r"([0-3][a-d]?|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
+        'M' : (r"[yra]{0,3}[upc]?M", r"([0-1][a-b]?|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
         'L' : (r"[uapc]?L", r"[0-1Xx]"),
         'V' : (r"[uapc]?V", r"[0-2Xx]"),
         'Pn': (r"[uapc]?Pn", r"[0-1Xx]"),
@@ -116,13 +116,13 @@ class RuleTNMExtractor():
         for match_id, start, end in matches:
             span = doc[start:end]  # The matched span
             tnmcomponent = self.nlp.vocab[match_id].text            
-            match = re.match(r'([yr]?)([yr]?)([uapc]?)(.*)', span.text)
+            match = re.match(r'([yra]?)([yra]?)([yra]?)([upc]?)(.*)', span.text)
             prefixes = []
-            for i in range(1, 4):
+            for i in range(1, 5):
                 prefix = match.group(i)
                 if prefix:
                     prefixes.append(prefix)
-            value = match.group(4)
+            value = match.group(5)
             # Component already seen, so start new TNM expression
             if cur_result.hasvalue(tnmcomponent) and \
                 not TNMMatch(span, None, value, None).contains(getattr(cur_result, tnmcomponent)):

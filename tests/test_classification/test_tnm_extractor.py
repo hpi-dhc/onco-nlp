@@ -197,13 +197,18 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.N, 'cN1', ['c'], 'N1', {}, 4, 7)
         self.assertNull(tnm, ['T', 'N'])
 
-    def test_tnm_prefix(self):
-        tnms = self.extractor.transform('aT1 uN1')
+    def test_tnm_prefix_multiple(self):
+        tnms = self.extractor.transform('acT1 uN1 yrapM1')
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
-        self.check_match(tnm.T, 'aT1', ['a'], 'T1', {}, 0, 3)
-        self.check_match(tnm.N, 'uN1', ['u'], 'N1', {}, 4, 7)
-        self.assertNull(tnm, ['T', 'N'])
+        self.check_match(tnm.T, 'acT1', ['a', 'c'], 'T1', {}, 0, 4)
+        self.check_match(tnm.N, 'uN1', ['u'], 'N1', {}, 5, 8)
+        self.check_match(tnm.M, 'yrapM1', ['y', 'r', 'a', 'p'], 'M1', {}, 9, 15)
+        self.assertNull(tnm, ['T', 'N', 'M'])
+
+    def test_tnm_prefix_invalid(self):
+        tnms = self.extractor.transform('puT1 puT1 yraaM1')
+        self.assertEqual(len(tnms), 0)
    
     #### Corner cases
 
