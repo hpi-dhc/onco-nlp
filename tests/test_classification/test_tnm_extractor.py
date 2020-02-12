@@ -91,7 +91,7 @@ class TestTNMExtractor(unittest.TestCase):
                 0, len(term))
 
     def test_no_parantheses(self):
-        extractor = TNMExtractor(detect_parantheses=True)
+        extractor = TNMExtractor(detect_parantheses=False)
         tnms = extractor.transform('N0(i-)')
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
