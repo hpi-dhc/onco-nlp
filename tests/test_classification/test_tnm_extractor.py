@@ -503,6 +503,12 @@ class TestTNMExtractor(unittest.TestCase):
         tnm = tnms[0]
         self.check_match(tnm.T, 'cT2-4', ['c'], 'T2-4', {}, 0, 5)
 
+        text = "pT1a/b"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'pT1a/b', ['p'], 'T1a/b', {}, 0, 6)
+
 
 if __name__ == '__main__':
     unittest.main()

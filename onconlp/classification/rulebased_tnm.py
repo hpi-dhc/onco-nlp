@@ -71,7 +71,7 @@ class RuleTNMExtractor():
             self.matcher.add(k, None, [
                 {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}},
                 {"TEXT": {"REGEX" : r'^[-/]$'}},
-                {"TEXT": {"REGEX" : r'^[0-9Xx]$'}},
+                {"TEXT": {"REGEX" : r'^[0-9Xxab]$'}},
             ])
             if self.detect_parentheses:
                 self.matcher.add(k, None, [
