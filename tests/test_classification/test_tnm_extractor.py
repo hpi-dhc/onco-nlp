@@ -490,6 +490,19 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.N, 'N0', [], 'N0', {}, 19, 21)
         self.assertTrue(tnm.merged)
 
+    def test_range(self):
+        text = "pNX/0"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.N, 'pNX/0', ['p'], 'NX/0', {}, 0, 5)
+
+        text = "cT2-4"
+        tnms = self.extractor.transform(text)
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'cT2-4', ['c'], 'T2-4', {}, 0, 5)
+
 
 if __name__ == '__main__':
     unittest.main()

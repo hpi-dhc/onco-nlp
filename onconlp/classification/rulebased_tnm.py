@@ -28,7 +28,7 @@ class RuleTNMExtractor():
         rules = self.nlp.Defaults.tokenizer_exceptions
         
         infixes = list(self.nlp.Defaults.infixes)
-        infixes.append(r'[\(\)-]')
+        infixes.append(r'[\(\)-/]')
         infixes = spacy.util.compile_infix_regex(tuple(infixes)).finditer
 
         prefixes = list(self.nlp.Defaults.prefixes)
@@ -67,6 +67,11 @@ class RuleTNMExtractor():
             # Single-token version
             self.matcher.add(k, None, [
                 {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}}
+            ])
+            self.matcher.add(k, None, [
+                {"TEXT": {"REGEX" : '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}},
+                {"TEXT": {"REGEX" : r'^[-/]$'}},
+                {"TEXT": {"REGEX" : r'^[0-9Xx]$'}},
             ])
             if self.detect_parentheses:
                 self.matcher.add(k, None, [
