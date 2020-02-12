@@ -90,6 +90,18 @@ class TestTNMExtractor(unittest.TestCase):
                 }, 
                 0, len(term))
 
+    def test_no_parantheses(self):
+        extractor = TNMExtractor(detect_parantheses=True)
+        tnms = extractor.transform('N0(i-)')
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.N, 'N0', [], 'N0', {}, 0, 2)
+         
+        tnms = extractor.transform('T1 (Erläuterung)')
+        self.assertEqual(len(tnms), 1)
+        tnm = tnms[0]
+        self.check_match(tnm.T, 'T1', [], 'T1', {}, 0, 2)
+
     def test_tnm_n_affixes(self):
         tnms = self.extractor.transform('N0(i-)')
         self.assertEqual(len(tnms), 1)

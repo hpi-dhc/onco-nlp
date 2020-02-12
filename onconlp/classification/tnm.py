@@ -78,8 +78,16 @@ from onconlp.classification import rulebased_tnm
 
 class TNMExtractor:
 
-    def __init__(self, language='de', allow_spaces=False, merge_matches=False):
-        self._impl = rulebased_tnm.RuleTNMExtractor(language, allow_spaces, merge_matches)
+    def __init__(self, language='de', allow_spaces=False, merge_matches=False, detect_parantheses=True):
+        """Creates the TNM extractor
+        
+        Keyword Arguments:
+            language {str} -- Language String (important for tokenization) (default: {'de'})
+            allow_spaces {bool} -- Are spaces inbetween allowed? Example: 'T 1' instead of 'T1' (default: {False})
+            merge_matches {bool} -- Will multiple matches within the same string be merged, if possible without conflict? (default: {False})
+            detect_parantheses {bool} -- Will parantheses after TNM parts be detected and analyzed? Example: N1 (2/3) (default: {True})
+        """
+        self._impl = rulebased_tnm.RuleTNMExtractor(language, allow_spaces, merge_matches, detect_parantheses)
 
     def transform(self, text):
         return self._impl.transform(text)
