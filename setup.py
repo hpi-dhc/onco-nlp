@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="onconlp",
-    version="0.0.1",
+    version="0.1.0",
     author="Florian Borchert",
     author_email="florian.borchert@hpi.de",
     description="A simple library for medical information extraction from free-text",
@@ -20,9 +20,9 @@ setuptools.setup(
     install_requires=[
         'nose2',
         'regex',
-        'spacy == 2.1.0',
-        'de_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-2.1.0/de_core_news_sm-2.1.0.tar.gz',
-        'en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.1.0/en_core_web_sm-2.1.0.tar.gz'
+        'spacy == 2.3.0',
+        'de_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-2.3.0/de_core_news_sm-2.3.0.tar.gz',
+        'en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.0/en_core_web_sm-2.3.0.tar.gz'
     ],
     python_requires='>=3.6',
 )
