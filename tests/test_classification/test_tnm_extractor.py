@@ -1,6 +1,7 @@
 import unittest
 from onconlp.classification.tnm import TNMExtractor
 
+
 class TestTNMExtractor(unittest.TestCase):
 
     extractor = TNMExtractor()
@@ -19,7 +20,7 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(elem.start, start, token)
         self.assertEqual(elem.end, end, token)
 
-    #### Basic tests
+    # Basic tests
     # based on https://www.krebsregister.unibe.ch/unibe/portal/microsites/krebsregister/content/e317889/e336472/e336546/TNM-Klassifikation_MW_22.01.15.pdf
 
     def check_simple_range(self, component, vrange):
@@ -33,61 +34,61 @@ class TestTNMExtractor(unittest.TestCase):
     def check_simple_range_negative(self,  component, vrange):
         for v in vrange:
             tnms = self.extractor.transform(v)
-            self.assertEqual(len(tnms), 0, '%s should not match' % v )
+            self.assertEqual(len(tnms), 0, '%s should not match' % v)
 
     def test_tnm_t_simple(self):
-        self.check_simple_range('T', 
-            ['T0', 'T1', 'T2', 'T3', 'T4', 
-             'T1a', 'T1b', 'T1c', 'T1d', 
-             'T2a', 'T2b', 'T2c', 'T2d', 
-             'T3a', 'T3b', 'T3c', 'T3d', 
-             'T4a', 'T4b', 'T4c', 'T4d', 
-             'Tis', 'Ta', 'TX', 'Tx'])            
+        self.check_simple_range('T',
+                                ['T0', 'T1', 'T2', 'T3', 'T4',
+                                 'T1a', 'T1b', 'T1c', 'T1d',
+                                 'T2a', 'T2b', 'T2c', 'T2d',
+                                 'T3a', 'T3b', 'T3c', 'T3d',
+                                 'T4a', 'T4b', 'T4c', 'T4d',
+                                 'Tis', 'Ta', 'TX', 'Tx'])
 
     def test_tnm_t_simple_negative(self):
-        self.check_simple_range_negative('T', ['T5', 'T', 'Tb', 'Tc', 'T-'])            
+        self.check_simple_range_negative('T', ['T5', 'T', 'Tb', 'Tc', 'T-'])
 
     def test_tnm_n_simple(self):
         self.check_simple_range('N', [
             'N0', 'N1', 'N2', 'N3',
-            'N1a', 'N1b', 'N1c', 'N1d', 
-            'N2a', 'N2b', 'N2c', 'N2d', 
-            'N3a', 'N3b', 'N3c', 'N3d', 
+            'N1a', 'N1b', 'N1c', 'N1d',
+            'N2a', 'N2b', 'N2c', 'N2d',
+            'N3a', 'N3b', 'N3c', 'N3d',
             'NX', 'Nx'
         ])
 
     def test_tnm_n_simple_negative(self):
-        self.check_simple_range_negative('N', ['N4', 'N', 'Na', 'Nis', 'N-'])  
+        self.check_simple_range_negative('N', ['N4', 'N', 'Na', 'Nis', 'N-'])
 
     def test_tnm_n_lymphnodes(self):
         for term in ['N1(1/2)', 'N1 (1/2)', 'N1( 1/2)', 'N1( 1 / 2)', 'N1 ( 1 / 2 )']:
             tnms = self.extractor.transform(term)
             self.assertEqual(len(tnms), 1)
             tnm = tnms[0]
-            self.check_match(tnm.N, term, [], 'N1', 
-                {'lymphnodes_affected': 1, 'lymphnodes_examined': 2}, 
-                0, len(term))
+            self.check_match(tnm.N, term, [], 'N1',
+                             {'lymphnodes_affected': 1, 'lymphnodes_examined': 2},
+                             0, len(term))
 
     def test_tnm_n_sn(self):
         for term in ['N1(sn)', 'N1 (sn)', 'N1  (sn)', 'N1 ( sn)', 'N1 ( sn )']:
             tnms = self.extractor.transform(term)
             self.assertEqual(len(tnms), 1)
             tnm = tnms[0]
-            self.check_match(tnm.N, term, [], 'N1', 
-                {'other': 'sn'}, 
-                0, len(term))
+            self.check_match(tnm.N, term, [], 'N1',
+                             {'other': ['sn']},
+                             0, len(term))
 
     def test_tnm_n_sn_lymphnodes(self):
         for term in ['N1(1/2sn)', 'N1 (1/2 sn)', 'N1  (sn 1/2)', 'N1 (1/2 sn)', 'N1 ( 1/2 sn )']:
             tnms = self.extractor.transform(term)
             self.assertEqual(len(tnms), 1)
             tnm = tnms[0]
-            self.check_match(tnm.N, term, [], 'N1', 
-                {
-                    'lymphnodes_affected': 1, 
-                    'lymphnodes_examined': 2,
-                    'other': 'sn'
-                }, 
+            self.check_match(tnm.N, term, [], 'N1',
+                             {
+                'lymphnodes_affected': 1,
+                'lymphnodes_examined': 2,
+                'other': ['sn']
+            },
                 0, len(term))
 
     def test_no_parantheses(self):
@@ -96,7 +97,7 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
         self.check_match(tnm.N, 'N0', [], 'N0', {}, 0, 2)
-         
+
         tnms = extractor.transform('T1 (Erläuterung)')
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
@@ -106,67 +107,67 @@ class TestTNMExtractor(unittest.TestCase):
         tnms = self.extractor.transform('N0(i-)')
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
-        self.check_match(tnm.N, 'N0(i-)', [], 'N0', {'other': 'i-'}, 0, 6)
+        self.check_match(tnm.N, 'N0(i-)', [], 'N0', {'other': ['i-']}, 0, 6)
         tnms = self.extractor.transform('N0(i+)')
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
-        self.check_match(tnm.N, 'N0(i+)', [], 'N0', {'other': 'i+'}, 0, 6)
+        self.check_match(tnm.N, 'N0(i+)', [], 'N0', {'other': ['i+']}, 0, 6)
         tnms = self.extractor.transform('N0(mol-)')
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
-        self.check_match(tnm.N, 'N0(mol-)', [], 'N0', {'other': 'mol-'}, 0, 8)
+        self.check_match(tnm.N, 'N0(mol-)', [], 'N0', {'other': ['mol-']}, 0, 8)
         tnms = self.extractor.transform('N0(mol+)')
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
-        self.check_match(tnm.N, 'N0(mol+)', [], 'N0', {'other': 'mol+'}, 0, 8)
+        self.check_match(tnm.N, 'N0(mol+)', [], 'N0', {'other': ['mol+']}, 0, 8)
 
     def test_tnm_m_simple(self):
-        self.check_simple_range('M', 
-            ['M0', 'M1', 'M1a', 'M1b', 'MX', 'Mx'])        
+        self.check_simple_range('M',
+                                ['M0', 'M1', 'M1a', 'M1b', 'MX', 'Mx'])
 
     def test_tnm_m_simple_negative(self):
-        self.check_simple_range_negative('M', 
-            ['M2', 'Ma', 'Mis', 'M'])        
+        self.check_simple_range_negative('M',
+                                         ['M2', 'Ma', 'Mis', 'M'])
 
     def test_tnm_grading_simple(self):
-        self.check_simple_range('G', 
-            ['G1', 'G2', 'G3', 'G4', 'GX', 'Gx'])    
+        self.check_simple_range('G',
+                                ['G1', 'G2', 'G3', 'G4', 'GX', 'Gx'])
 
     def test_tnm_grading_simple_negative(self):
-        self.check_simple_range_negative('G', 
-            ['G0', 'G5', 'G', 'Ga', 'Gis'])
+        self.check_simple_range_negative('G',
+                                         ['G0', 'G5', 'G', 'Ga', 'Gis'])
 
     def test_tnm_residual_simple(self):
-        self.check_simple_range('R', 
-            ['R0', 'R1', 'R2', 'R2a', 'R2b'])
+        self.check_simple_range('R',
+                                ['R0', 'R1', 'R2', 'R2a', 'R2b'])
 
     def test_tnm_residual_simple_negative(self):
-        self.check_simple_range_negative('R', 
-            ['R3', 'R', 'Ra', 'RX'])
+        self.check_simple_range_negative('R',
+                                         ['R3', 'R', 'Ra', 'RX'])
 
     def test_tnm_lymphinvasion_simple(self):
-        self.check_simple_range('L', 
-            ['L0', 'L1', 'LX'])
+        self.check_simple_range('L',
+                                ['L0', 'L1', 'LX'])
 
     def test_tnm_lymphinvasion_simple_negative(self):
-        self.check_simple_range_negative('L', 
-            ['L2', 'La', 'L'])
+        self.check_simple_range_negative('L',
+                                         ['L2', 'La', 'L'])
 
     def test_tnm_vene_invasion_simple(self):
-        self.check_simple_range('V', 
-            ['V0', 'V1', 'V2', 'VX'])
+        self.check_simple_range('V',
+                                ['V0', 'V1', 'V2', 'VX'])
 
     def test_tnm_vene_invasion_simple_negative(self):
-        self.check_simple_range_negative('V', 
-            ['V3', 'Va', 'V'])
+        self.check_simple_range_negative('V',
+                                         ['V3', 'Va', 'V'])
 
     def test_tnm_perineural_invasion_simple(self):
-        self.check_simple_range('Pn', 
-            ['Pn0', 'Pn1', 'PnX'])
+        self.check_simple_range('Pn',
+                                ['Pn0', 'Pn1', 'PnX'])
 
     def test_tnm_perineural_simple_negative(self):
-        self.check_simple_range_negative('Pn', 
-            ['Pn2', 'Pn', 'P'])
+        self.check_simple_range_negative('Pn',
+                                         ['Pn2', 'Pn', 'P'])
 
     def test_tnm_words(self):
         tnms = self.extractor.transform('Tissue')
@@ -174,7 +175,7 @@ class TestTNMExtractor(unittest.TestCase):
         tnms = self.extractor.transform('Target')
         self.assertEqual(len(tnms), 0)
 
-    def test_tnm_perineural_vs_lypmh(self):        
+    def test_tnm_perineural_vs_lypmh(self):
         # Controverial, but genes would match if too lax
         tnms = self.extractor.transform('PN1')
         self.assertEqual(len(tnms), 0)
@@ -200,7 +201,7 @@ class TestTNMExtractor(unittest.TestCase):
         self.check_match(tnm.N, 'N1', [], 'N1', {}, 3, 5)
         self.check_match(tnm.M, 'M0', [], 'M0', {}, 6, 8)
         self.assertNull(tnm, ['T', 'N', 'M'])
-    
+
     def test_tnm_prefix(self):
         tnms = self.extractor.transform('pT1 cN1')
         self.assertEqual(len(tnms), 1)
@@ -215,14 +216,15 @@ class TestTNMExtractor(unittest.TestCase):
         tnm = tnms[0]
         self.check_match(tnm.T, 'acT1', ['a', 'c'], 'T1', {}, 0, 4)
         self.check_match(tnm.N, 'uN1', ['u'], 'N1', {}, 5, 8)
-        self.check_match(tnm.M, 'yrapM1', ['y', 'r', 'a', 'p'], 'M1', {}, 9, 15)
+        self.check_match(tnm.M, 'yrapM1', [
+                         'y', 'r', 'a', 'p'], 'M1', {}, 9, 15)
         self.assertNull(tnm, ['T', 'N', 'M'])
 
     def test_tnm_prefix_invalid(self):
         tnms = self.extractor.transform('puT1 puT1 yraaM1')
         self.assertEqual(len(tnms), 0)
-   
-    #### Corner cases
+
+    # Corner cases
 
     def test_tnm_context_negative(self):
         self.check_simple_range_negative('T', ['AT2', '1T1'])
@@ -233,9 +235,8 @@ class TestTNMExtractor(unittest.TestCase):
             self.assertEqual(len(tnms), 1)
             tnm = tnms[0]
             self.check_match(tnm.T, 'T1', [], 'T1', {}, 1, 3)
-    
 
-    #### Real-world examples
+    # Real-world examples
 
     def test_tnm_example_1(self):
         tnms = self.extractor.transform('cT4 cN2 cM0 G3')
@@ -262,8 +263,8 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
         self.check_match(tnm.T, 'pT4b', ['p'], 'T4b', {}, 0, 4)
-        self.check_match(tnm.N, 'pN2b (18/25)', ['p'], 'N2b', 
-            {'lymphnodes_affected': 18, 'lymphnodes_examined': 25}, 5, 17)
+        self.check_match(tnm.N, 'pN2b (18/25)', ['p'], 'N2b',
+                         {'lymphnodes_affected': 18, 'lymphnodes_examined': 25}, 5, 17)
         self.check_match(tnm.M, 'cM0', ['c'], 'M0', {}, 18, 21)
         self.check_match(tnm.G, 'G3', [], 'G3', {}, 22, 24)
         self.check_match(tnm.L, 'pL1', ['p'], 'L1', {}, 25, 28)
@@ -276,8 +277,8 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
         self.check_match(tnm.T, 'pT1', ['p'], 'T1', {}, 0, 3)
-        self.check_match(tnm.N, 'pN1 (5/13)', ['p'], 'N1', 
-            {'lymphnodes_affected': 5, 'lymphnodes_examined': 13}, 4, 14)
+        self.check_match(tnm.N, 'pN1 (5/13)', ['p'], 'N1',
+                         {'lymphnodes_affected': 5, 'lymphnodes_examined': 13}, 4, 14)
         self.assertNull(tnm, ['T', 'N'])
 
     def test_TNM_Prefix_Neoadjuvant(self):
@@ -349,7 +350,7 @@ class TestTNMExtractor(unittest.TestCase):
         tnm = tnms[0]
         self.check_match(tnm.G, 'G3', [], 'G3', {}, 21, 23)
         self.assertNull(tnm, ['G'])
-       
+
     def test_histo_lymph_1(self):
         text = "UICC-Klassifikation (8. Auflage, 2017) 16. pT2, pN1(2/22), G2, L1, V0, Pn1, R0 (lokal) "
         tnms = self.extractor.transform(text)
@@ -357,13 +358,13 @@ class TestTNMExtractor(unittest.TestCase):
         tnm = tnms[0]
         self.check_match(tnm.T, 'pT2', ['p'], 'T2', {}, 43, 46)
         self.check_match(tnm.N, 'pN1(2/22)', ['p'], 'N1', {
-            "lymphnodes_affected" : 2, "lymphnodes_examined" : 22}, 48, 57)
+            "lymphnodes_affected": 2, "lymphnodes_examined": 22}, 48, 57)
         self.check_match(tnm.G, 'G2', [], 'G2', {}, 59, 61)
-        self.check_match(tnm.L, 'L1', [], 'L1', {}, 63, 65)        
+        self.check_match(tnm.L, 'L1', [], 'L1', {}, 63, 65)
         self.check_match(tnm.V, 'V0', [], 'V0', {}, 67, 69)
         self.check_match(tnm.Pn, 'Pn1', [], 'Pn1', {}, 71, 74)
         self.check_match(tnm.R, 'R0 (lokal)', [], 'R0', {
-            "other" : 'lokal' }, 76, 86)
+            "other": ['lokal']}, 76, 86)
         self.assertIsNone(tnm.M)
         self.assertIsNone(tnm.SX)
 
@@ -374,12 +375,12 @@ class TestTNMExtractor(unittest.TestCase):
         tnm = tnms[0]
         self.check_match(tnm.T, 'pT2', ['p'], 'T2', {}, 44, 47)
         self.check_match(tnm.N, 'pN1 (3/13, max. 1,8 cm)', ['p'], 'N1', {
-            "lymphnodes_affected" : 3, "lymphnodes_examined" : 13, "other" : 'max. 1,8 cm'}, 49, 72)
-        self.check_match(tnm.L, 'L1', [], 'L1', {}, 74, 76)        
+            "lymphnodes_affected": 3, "lymphnodes_examined": 13, "other": ['max. 1,8 cm']}, 49, 72)
+        self.check_match(tnm.L, 'L1', [], 'L1', {}, 74, 76)
         self.check_match(tnm.V, 'V0', [], 'V0', {}, 78, 80)
         self.check_match(tnm.Pn, 'Pn1', [], 'Pn1', {}, 82, 85)
         self.check_match(tnm.R, 'R1 (dorsal)', [], 'R1', {
-            "other" : 'dorsal' }, 87, 98)
+            "other": ['dorsal']}, 87, 98)
         self.assertIsNone(tnm.M)
         self.assertIsNone(tnm.G)
         self.assertIsNone(tnm.SX)
@@ -391,7 +392,7 @@ class TestTNMExtractor(unittest.TestCase):
         tnm = tnms[0]
         self.check_match(tnm.T, 'pT3', ['p'], 'T3', {}, 44, 47)
         self.check_match(tnm.N, 'pN2(4/21)', ['p'], 'N2', {
-            "lymphnodes_affected" : 4, "lymphnodes_examined" : 21
+            "lymphnodes_affected": 4, "lymphnodes_examined": 21
         }, 49, 58)
         self.check_match(tnm.M, 'pMX', ['p'], 'MX', {}, 60, 63)
         self.check_match(tnm.G, 'G2', [], 'G2', {}, 66, 68)
@@ -406,16 +407,17 @@ class TestTNMExtractor(unittest.TestCase):
         tnms = self.extractor.transform(text)
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
-        self.check_match(tnm.T, 'pT3 (5 cm)', ['p'], 'T3', {"other" : "5 cm"}, 44, 54)
+        self.check_match(tnm.T, 'pT3 (5 cm)', ['p'], 'T3', {
+                         "other": ['5 cm']}, 44, 54)
         self.check_match(tnm.N, 'pN1(2/12)', ['p'], 'N1', {
-            "lymphnodes_affected" : 2, "lymphnodes_examined" : 12
+            "lymphnodes_affected": 2, "lymphnodes_examined": 12
         }, 56, 65)
         self.check_match(tnm.Pn, 'Pn1', [], 'Pn1', {}, 67, 70)
         self.check_match(tnm.L, 'L0', [], 'L0', {}, 72, 74)
         self.check_match(tnm.V, 'V1', [], 'V1', {}, 76, 78)
         self.check_match(tnm.G, 'G2', [], 'G2', {}, 80, 82)
-        self.check_match(tnm.R, 'R1 (Gallengangs- und Pankreasabsetzungsrand)', 
-            [], 'R1', {"other" : 'Gallengangs- und Pankreasabsetzungsrand'}, 84, 128)
+        self.check_match(tnm.R, 'R1 (Gallengangs- und Pankreasabsetzungsrand)',
+                         [], 'R1', {"other": ['Gallengangs- und Pankreasabsetzungsrand']}, 84, 128)
         self.assertIsNone(tnm.M)
         self.assertIsNone(tnm.SX)
 
@@ -425,9 +427,48 @@ class TestTNMExtractor(unittest.TestCase):
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
         self.check_match(tnm.T, 'pT2c', ['p'], 'T2c', {}, 15, 19)
-        self.check_match(tnm.M, 'MX (0/2 sn)', [], 'MX', {'other' : '0/2 sn'}, 21, 32)
+        self.check_match(tnm.M, 'MX (0/2 sn)', [], 'MX',
+                         {'other': ['0/2 sn']}, 21, 32)
         self.check_match(tnm.G, 'GX', [], 'GX', {}, 43, 45)
         self.check_match(tnm.R, 'R0', [], 'R0', {}, 72, 74)
+
+    def test_t_suffix_list(self):
+        self.check_match(self.extractor.transform("pT2(m,is)")[0].T, 'pT2(m,is)', [
+                         'p'], 'T2', {'other': ['m', 'is']}, 0, 9)
+        self.check_match(self.extractor.transform("pT2(1,2cm)")[
+                         0].T, 'pT2(1,2cm)', ['p'], 'T2', {'other': ['1,2cm']}, 0, 10)
+        self.check_match(self.extractor.transform("pT2(1,2cm, is, m)")[
+            0].T, 'pT2(1,2cm, is, m)', ['p'], 'T2', {'other': ['1,2cm', 'is', 'm']}, 0, 17)
+        self.check_match(self.extractor.transform("pT2(is,2cm)")[0].T, 'pT2(is,2cm)', [
+                         'p'], 'T2', {'other': ['is', '2cm']}, 0, 11)
+        self.check_match(self.extractor.transform("pT2(2cm, is)")[
+                         0].T, 'pT2(2cm, is)', ['p'], 'T2', {'other': ['2cm', 'is']}, 0, 12)
+        self.check_match(self.extractor.transform("pT2(4A, is)")[
+                         0].T, 'pT2(4A, is)', ['p'], 'T2', {'other': ['4A', 'is']}, 0, 11)
+        self.check_match(self.extractor.transform("pT2(m is)")[
+            0].T, 'pT2(m is)', ['p'], 'T2', {'other': ['m', 'is']}, 0, 9)
+        self.check_match(self.extractor.transform("pT2(intraparenchymale Invasion)")[
+                         0].T, 'pT2(intraparenchymale Invasion)', ['p'], 'T2', {'other': ['intraparenchymale Invasion']}, 0, 31)
+
+    def test_diff_suffix_lists(self):
+        self.check_match(self.extractor.transform("pN1(mi, mol+)")[0].N, 'pN1(mi, mol+)', ['p'], 'N1', {'other': ['mi', 'mol+']}, 0, 13)
+        self.check_match(self.extractor.transform("pN1(mi mol+)")[0].N, 'pN1(mi mol+)', ['p'], 'N1', {'other': ['mi', 'mol+']}, 0, 12)
+        self.check_match(self.extractor.transform("pN1(mi, 4)")[0].N, 'pN1(mi, 4)', ['p'], 'N1', {'other': ['mi', '4']}, 0, 10)
+        self.check_match(self.extractor.transform("pN1(mi, mol+, is)")[0].N, 'pN1(mi, mol+, is)', ['p'], 'N1', {'other': ['mi', 'mol+', 'is']}, 0, 17)
+
+        self.check_match(self.extractor.transform("pM1(mi, is)")[0].M, 'pM1(mi, is)', ['p'], 'M1', {'other': ['mi', 'is']}, 0, 11)
+        self.check_match(self.extractor.transform("pM1(mi is)")[0].M, 'pM1(mi is)', ['p'], 'M1', {'other': ['mi', 'is']}, 0, 10)
+        self.check_match(self.extractor.transform("pM1(mi, 4A)")[0].M, 'pM1(mi, 4A)', ['p'], 'M1', {'other': ['mi', '4A']}, 0, 11)
+        self.check_match(self.extractor.transform("pM1(mi, is, bla)")[0].M, 'pM1(mi, is, bla)', ['p'], 'M1', {'other': ['mi', 'is', 'bla']}, 0, 16)  
+        self.check_match(self.extractor.transform("pM1(mi, 5,2cm)")[0].M, 'pM1(mi, 5,2cm)', ['p'], 'M1', {'other': ['mi', '5,2cm']}, 0, 14)      
+
+    def test_lymphnodes_suffix_list(self):
+        self.check_match(self.extractor.transform("pN1(1/3, 2cm)")[0].N, 'pN1(1/3, 2cm)', ['p'], 'N1', {'lymphnodes_affected': 1, 
+            'lymphnodes_examined': 3,'other': ['2cm']}, 0, 13)
+
+    def test_t_suffix_number(self):
+        self.check_match(self.extractor.transform("pT2(1)")[
+            0].T, 'pT2(1)', ['p'], 'T2', {'other': ['1']}, 0, 6)
 
     def test_resection_1(self):
         text = "11. R-Status 0 "
@@ -441,8 +482,8 @@ class TestTNMExtractor(unittest.TestCase):
         tnms = self.extractor.transform(text)
         self.assertEqual(len(tnms), 1)
         tnm = tnms[0]
-        self.check_match(tnm.R, 'R-Status 1 (intraparenchymatöser Absetzungsrand)', [], 'R1', 
-            {"other": 'intraparenchymatöser Absetzungsrand'}, 3, 51)
+        self.check_match(tnm.R, 'R-Status 1 (intraparenchymatöser Absetzungsrand)', [], 'R1',
+                         {"other": ['intraparenchymatöser Absetzungsrand']}, 3, 51)
 
     def test_v_status(self):
         text = "V-Status 1"
