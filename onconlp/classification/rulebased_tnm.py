@@ -1,5 +1,5 @@
-from onconlp.classification.tnm import TNMClassification, TNMMatch
-from onconlp.spacy_util import load_spacy
+from .tnm import TNMClassification, TNMMatch
+from ..spacy_util import load_spacy
 import spacy
 from spacy.matcher import Matcher
 from spacy.tokenizer import Tokenizer
@@ -8,7 +8,6 @@ import sys
 
 
 class RuleTNMExtractor():
-
     __tnm_rules = {
         'T': (r"[yra]{0,3}[upc]?T", r"([0-4][a-d]?|is|a|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
         'N': (r"[yra]{0,3}[upc]?N", r"([0-3][a-d]?|X|x)(?=(?:[^bdefghiklmnoqstvwxz]{0,3}[A-Z]|\s|$))"),
@@ -39,7 +38,7 @@ class RuleTNMExtractor():
 
         suffixes = list(self.nlp.Defaults.suffixes)
         suffixes = spacy.util.compile_suffix_regex(tuple(suffixes)).search
-        
+
         self.nlp.tokenizer = Tokenizer(self.nlp.vocab,
                                        rules=rules,
                                        prefix_search=prefixes,
@@ -52,37 +51,61 @@ class RuleTNMExtractor():
         def add_rule(k, v):
             if allow_spaces:
                 # Multi-token version (e.g., spaces betw. T 1 instead of T1)
-                self.matcher.add(k, None, [
-                    {"TEXT": {"REGEX": '(?<![A-Za-z0-9])' + v[0] + '$'}},
-                    {"TEXT": {"REGEX": v[1]}}
-                ])
+                self.matcher.add(
+                    k,
+                    [
+                        [
+                            {"TEXT": {"REGEX": '(?<![A-Za-z0-9])' + v[0] + '$'}},
+                            {"TEXT": {"REGEX": v[1]}}
+                        ]
+                    ]
+                )
                 if self.detect_parentheses:
-                    self.matcher.add(k, None, [
+                    self.matcher.add(
+                        k,
+                        [[
                         {"TEXT": {"REGEX": '(?<![A-Za-z0-9])' + v[0] + '$'}},
                         {"TEXT": {"REGEX": v[1]}},
                         {"TEXT": {"REGEX": r'\s'}, "OP": "*"},
                         {"TEXT": '('},
                         {"TEXT": {"REGEX": r'[^\(\)]'}, "OP": "+"},
                         {"TEXT": ')'}
-                    ])
+                    ]])
             # Single-token version
-            self.matcher.add(k, None, [
-                {"TEXT": {"REGEX": '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}}
-            ])
-            self.matcher.add(k, None, [
-                {"TEXT": {"REGEX": '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}},
-                {"TEXT": {"REGEX": r'^[-/]$'}},
-                {"TEXT": {"REGEX": r'^[0-9Xxab]$'}},
-            ])
+
+            pattern = \
+                [
+                    {
+                        "TEXT":
+                            {
+                                "REGEX": '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'
+                            }
+                    }
+                ]
+
+            self.matcher.add(
+                k,
+                [pattern]
+            )
+
+            self.matcher.add(k,  # None,
+                             [[
+                                 {"TEXT": {"REGEX": '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}},
+                                 {"TEXT": {"REGEX": r'^[-/]$'}},
+                                 {"TEXT": {"REGEX": r'^[0-9Xxab]$'}},
+                             ]]
+                             )
             if self.detect_parentheses:
-                self.matcher.add(k, None, [
-                    {"TEXT": {
-                        "REGEX": '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}},
-                    {"TEXT": {"REGEX": r'\s'}, "OP": "*"},
-                    {"TEXT": '('},
-                    {"TEXT": {"REGEX": r'[^\(\)]'}, "OP": "+"},
-                    {"TEXT": ')'}
-                ])
+                self.matcher.add(k,
+                                 [[
+                                     {"TEXT": {
+                                         "REGEX": '(?<![A-Za-z0-9])' + v[0] + v[1] + '$'}},
+                                     {"TEXT": {"REGEX": r'\s'}, "OP": "*"},
+                                     {"TEXT": '('},
+                                     {"TEXT": {"REGEX": r'[^\(\)]'}, "OP": "+"},
+                                     {"TEXT": ')'}
+                                 ]]
+                                 )
 
         for k, v in self.__tnm_rules.items():
             add_rule(k, v)
@@ -95,29 +118,34 @@ class RuleTNMExtractor():
 
     def add_status_indicator(self):
         def add(key, affixes):
-            self.matcher.add(key, None, [
-                {"TEXT": key},
-                {"TEXT": "-"},
-                {"LOWER": "status"},
-                {"TEXT": ":", "OP": "?"},
-                {"TEXT": {"REGEX": affixes}}
-            ])
+            self.matcher.add(key,
+                             [[
+                                 {"TEXT": key},
+                                 {"TEXT": "-"},
+                                 {"LOWER": "status"},
+                                 {"TEXT": ":", "OP": "?"},
+                                 {"TEXT": {"REGEX": affixes}}
+                             ]]
+                             )
             if self.detect_parentheses:
-                self.matcher.add(key, None, [
-                    {"TEXT": key},
-                    {"TEXT": "-"},
-                    {"LOWER": "status"},
-                    {"TEXT": ":", "OP": "?"},
-                    {"TEXT": {"REGEX": affixes}},
-                    {"TEXT": {"REGEX": r'\s'}, "OP": "*"},
-                    {"TEXT": '('},
-                    {"TEXT": {"REGEX": r'[^\(\)]'}, "OP": "+"},
-                    {"TEXT": ')'}
-                ])
-        add('R',  "^[0-2][ab]?")
-        add('V',  "^[0-2Xx]")
+                self.matcher.add(key,
+                                 [[
+                                     {"TEXT": key},
+                                     {"TEXT": "-"},
+                                     {"LOWER": "status"},
+                                     {"TEXT": ":", "OP": "?"},
+                                     {"TEXT": {"REGEX": affixes}},
+                                     {"TEXT": {"REGEX": r'\s'}, "OP": "*"},
+                                     {"TEXT": '('},
+                                     {"TEXT": {"REGEX": r'[^\(\)]'}, "OP": "+"},
+                                     {"TEXT": ')'}
+                                 ]]
+                                 )
+
+        add('R', "^[0-2][ab]?")
+        add('V', "^[0-2Xx]")
         add('Pn', "^[0-1Xx]")
-        add('L',  "^[0-1Xx]")
+        add('L', "^[0-1Xx]")
 
     def transform(self, text):
         doc = self.nlp(text)
@@ -142,7 +170,7 @@ class RuleTNMExtractor():
                 cur_result = TNMClassification()
             details = {}
             if self.detect_parentheses:
-                if tnmcomponent is 'N':
+                if tnmcomponent == 'N':
                     details, value = self.add_details_n(value, details)
                 else:
                     details, value = self.add_details(value, details)
